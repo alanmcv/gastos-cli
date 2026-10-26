@@ -160,6 +160,12 @@ def validar_gasto_guardado(gasto) -> bool:
         return False
 
 
+def gastos_del_mes(gastos: list, anio: int, mes: int) -> list:
+    """Devuelve los gastos de ese mes y año, en el orden en que se registraron (RF-6.1, RF-6.4)."""
+    prefijo = f"{anio:04d}-{mes:02d}-"
+    return [g for g in gastos if g["fecha"].startswith(prefijo)]
+
+
 def formatear_monto(centavos: int) -> str:
     """Convierte centavos en texto para el usuario: 2550 -> "Bs 25.50" (RF-10.1)."""
     return f"Bs {centavos // 100}.{centavos % 100:02d}"

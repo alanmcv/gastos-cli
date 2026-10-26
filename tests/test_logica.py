@@ -7,6 +7,7 @@ from gastos.logica import (
     crear_gasto,
     formatear_fecha,
     formatear_monto,
+    gastos_del_mes,
     normalizar_categoria,
     normalizar_descripcion,
     parsear_monto,
@@ -279,3 +280,39 @@ def test_validar_gasto_guardado_rechaza_si_falta_una_clave(clave):
 def test_validar_gasto_guardado_rechaza_lo_que_no_es_un_objeto(gasto):
     """RF-8.3: un elemento que no es un objeto JSON no es un gasto."""
     assert validar_gasto_guardado(gasto) is False
+
+
+def gasto(fecha, monto_centavos=100, categoria="comida", descripcion=""):
+    return {
+        "fecha": fecha,
+        "monto_centavos": monto_centavos,
+        "categoria": categoria,
+        "descripcion": descripcion,
+    }
+
+
+def test_gastos_del_mes_filtra_por_mes_y_anio_conservando_el_orden():
+    """RF-6.1, RF-6.4, RF-7.1: solo el mes y año pedidos, en orden de registro (aunque una fecha sea futura)."""
+    futuro = gasto("2026-10-30")  # registrado antes que el del día 1 (reloj alterado)
+    primero = gasto("2026-10-01")
+    ultimo = gasto("2026-10-31")
+    gastos = [
+        gasto("2026-09-30"),
+        futuro,
+        gasto("2025-10-15"),
+        primero,
+        gasto("2026-11-01"),
+        ultimo,
+    ]
+    assert gastos_del_mes(gastos, 2026, 10) == [futuro, primero, ultimo]
+
+
+def test_gastos_del_mes_en_cambio_de_anio():
+    """RF-6.1: un gasto de diciembre de 2026 no aparece en enero de 2027."""
+    enero = gasto("2027-01-01")
+    assert gastos_del_mes([gasto("2026-12-31"), enero], 2027, 1) == [enero]
+
+
+def test_gastos_del_mes_sin_gastos():
+    """RF-6.1: si no hay gastos ese mes, la lista queda vacía."""
+    assert gastos_del_mes([gasto("2026-09-30")], 2026, 10) == []
