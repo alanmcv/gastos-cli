@@ -1,6 +1,19 @@
 import pytest
 
-from gastos.logica import formatear_fecha, formatear_monto, parsear_monto
+from gastos.logica import ErrorGastos, formatear_fecha, formatear_monto, parsear_monto
+
+# Textos exactos del catálogo de la spec (RF-10.3).
+E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
+E2 = "Error: el monto debe ser mayor que cero."
+E3 = "Error: el monto puede tener como máximo 2 decimales."
+E5 = "Error: el monto máximo por gasto es Bs 1000000.00."
+
+
+def e4(valor):
+    return (
+        f'Error: "{valor}" no es un monto válido. Usa solo cifras y, si quieres, '
+        "un punto o una coma con hasta 2 decimales (ej.: 25.50)."
+    )
 
 
 def test_modulo_logica_se_puede_importar():
@@ -42,3 +55,36 @@ def test_formatear_fecha():
 def test_parsear_monto_valido(texto, centavos):
     """RF-3.1, RF-3.2, RF-3.3, RF-3.4: un monto válido se convierte en centavos exactos."""
     assert parsear_monto(texto) == centavos
+
+
+@pytest.mark.parametrize(
+    "texto, mensaje",
+    [
+        ("", E1),
+        ("   ", E1),
+        ("-5", E2),
+        ("-0.001", E2),
+        ("25.555", E3),
+        ("0.001", E3),
+        ("1.000", E3),
+        ("+25", e4("+25")),
+        (".50", e4(".50")),
+        ("25.", e4("25.")),
+        ("1e3", e4("1e3")),
+        ("NaN", e4("NaN")),
+        ("1 000", e4("1 000")),
+        ("25 Bs", e4("25 Bs")),
+        ("1.000,50", e4("1.000,50")),
+        ("25,5,0", e4("25,5,0")),
+        ("0", E2),
+        ("00", E2),
+        ("0.00", E2),
+        ("0,0", E2),
+        ("1000000.01", E5),
+    ],
+)
+def test_parsear_monto_invalido_da_el_primer_error(texto, mensaje):
+    """RF-3.5, RF-10.3: cada monto inválido da el primer error que corresponde, con su texto exacto."""
+    with pytest.raises(ErrorGastos) as error:
+        parsear_monto(texto)
+    assert str(error.value) == mensaje
