@@ -18,7 +18,7 @@
 
 ## Fase 1 — Lógica pura (`logica.py`)
 
-- [ ] **T02 · Formatos de salida:** `formatear_monto` y `formatear_fecha`. · RF-10.1, RF-10.2 · Depende de T01
+- [x] **T02 · Formatos de salida:** `formatear_monto` y `formatear_fecha`. · RF-10.1, RF-10.2 · Depende de T01
   - Hecho cuando: los tests confirman que `1` → `Bs 0.01`, `2550` → `Bs 25.50`, `100000000` → `Bs 1000000.00` y `"2026-10-05"` → `05/10/2026`.
 - [ ] **T03 · `parsear_monto`, montos válidos.** · RF-3.1, RF-3.2, RF-3.3, RF-3.4 · Depende de T01
   - Hecho cuando: un test parametrizado confirma que `25` → 2500, `025` → 2500, `25.5` → 2550, `25,50` → 2550, ` 25 ` → 2500, `0.01` → 1 y `1000000.00` → 100000000.
