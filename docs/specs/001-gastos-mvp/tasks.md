@@ -58,7 +58,7 @@
 
 ## Fase 2 — Almacén (`almacen.py`)
 
-- [ ] **T14 · `cargar` y `guardar`, casos normales.** · RF-8.1, RF-8.2, RF-8.4 · Depende de T09
+- [x] **T14 · `cargar` y `guardar`, casos normales.** · RF-8.1, RF-8.2, RF-8.4 · Depende de T09
   - Hecho cuando: en `tmp_path`, un archivo inexistente da `[]`, y una ida y vuelta con `café ☕` y una clave de más devuelve exactamente lo que se guardó, con el JSON en UTF-8 legible (sin `é`).
 - [ ] **T15 · `cargar`, datos ilegibles (E-10).** · RF-8.3, RF-10.3 · Depende de T14
   - Hecho cuando: cada uno de estos casos lanza E-10 con su motivo en español, y el contenido del archivo queda idéntico byte a byte:
