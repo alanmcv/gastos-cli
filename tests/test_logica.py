@@ -5,6 +5,7 @@ from gastos.logica import (
     formatear_fecha,
     formatear_monto,
     normalizar_categoria,
+    normalizar_descripcion,
     parsear_monto,
 )
 
@@ -19,6 +20,8 @@ E7 = (
     "y debe empezar con una letra o una cifra."
 )
 E8 = "Error: la categoría puede tener como máximo 30 caracteres."
+E9 = "Error: la descripción puede tener como máximo 100 caracteres."
+E13 = "Error: la descripción tiene caracteres no permitidos."
 
 
 def e4(valor):
@@ -151,3 +154,34 @@ def test_normalizar_categoria_invalida(texto, mensaje):
 def test_normalizar_categoria_valida_hasta_30_caracteres(texto):
     """RF-4.4, RF-4.5: letras con tilde, ñ, ü, cifras, espacios, "-" y "_"; 30 caracteres se aceptan."""
     assert normalizar_categoria(texto) == texto
+
+
+@pytest.mark.parametrize(
+    "texto, esperado",
+    [
+        ("   ", ""),
+        ("", ""),
+        ("a\nb", "a b"),
+        ("  Almuerzo  en la U ", "Almuerzo en la U"),
+        ("Matrícula ☕ 🍕", "Matrícula ☕ 🍕"),
+        ("ñ" * 50 + "🍕" * 50, "ñ" * 50 + "🍕" * 50),
+    ],
+)
+def test_normalizar_descripcion(texto, esperado):
+    """RF-5.1, RF-5.2, RF-5.3, RF-5.5: normaliza espacios, conserva mayúsculas y emojis; 100 caracteres se aceptan."""
+    assert normalizar_descripcion(texto) == esperado
+
+
+@pytest.mark.parametrize(
+    "texto, mensaje",
+    [
+        ("a" * 101, E9),
+        ("a\x07b", E13),
+        ("a" * 100 + "\x07", E13),
+    ],
+)
+def test_normalizar_descripcion_invalida(texto, mensaje):
+    """RF-5.4, RF-5.5, RF-10.3: no imprimibles dan E-13 (antes que el largo) y más de 100 caracteres dan E-9."""
+    with pytest.raises(ErrorGastos) as error:
+        normalizar_descripcion(texto)
+    assert str(error.value) == mensaje

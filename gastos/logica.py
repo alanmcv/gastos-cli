@@ -18,9 +18,12 @@ E7 = (
     "y debe empezar con una letra o una cifra."
 )
 E8 = "Error: la categoría puede tener como máximo 30 caracteres."
+E9 = "Error: la descripción puede tener como máximo 100 caracteres."
+E13 = "Error: la descripción tiene caracteres no permitidos."
 
 MONTO_MAXIMO_CENTAVOS = 100_000_000
 CATEGORIA_MAXIMO_CARACTERES = 30
+DESCRIPCION_MAXIMO_CARACTERES = 100
 
 # Cifras ASCII y, opcionalmente, un separador (punto o coma) con 1 o 2 decimales (RF-3.2).
 _MONTO_VALIDO = re.compile(r"([0-9]+)(?:[.,]([0-9]{1,2}))?")
@@ -55,6 +58,14 @@ def parsear_monto(texto: str) -> int:
     return centavos
 
 
+def _normalizar_espacios(texto: str) -> str:
+    """Aplica NFC, quita los espacios en blanco de los extremos y colapsa los internos (RF-4.1, RF-5.1).
+
+    NFC hace que una "é" escrita como "e" + tilde combinante cuente como 1 carácter.
+    """
+    return " ".join(unicodedata.normalize("NFC", texto).split())
+
+
 def _es_letra_o_cifra(caracter: str) -> bool:
     """Letras de cualquier alfabeto (con tilde, ñ, ü) o cifras 0-9; "²" no cuenta como cifra."""
     return caracter.isalpha() or caracter in "0123456789"
@@ -63,10 +74,9 @@ def _es_letra_o_cifra(caracter: str) -> bool:
 def normalizar_categoria(texto: str) -> str:
     """Normaliza una categoría: "  Comida  Rápida " -> "comida rápida" (RF-4.1).
 
-    NFC hace que una "é" escrita como "e" + tilde combinante cuente como 1 carácter.
     Si la categoría no es válida, lanza ErrorGastos con E-6, E-7 o E-8 (RF-4.3 a RF-4.5).
     """
-    categoria = " ".join(unicodedata.normalize("NFC", texto).split()).lower()
+    categoria = _normalizar_espacios(texto).lower()
     if categoria == "":
         raise ErrorGastos(E6)
     if not _es_letra_o_cifra(categoria[0]) or not all(
@@ -76,6 +86,21 @@ def normalizar_categoria(texto: str) -> str:
     if len(categoria) > CATEGORIA_MAXIMO_CARACTERES:
         raise ErrorGastos(E8)
     return categoria
+
+
+def normalizar_descripcion(texto: str) -> str:
+    """Normaliza una descripción como la categoría, pero sin pasarla a minúsculas (RF-5.1, RF-5.2).
+
+    Si no es válida, lanza ErrorGastos con E-13 o E-9, en ese orden (RF-5.4, RF-5.5).
+    """
+    descripcion = _normalizar_espacios(texto)
+    # ponytail: isprintable() rechaza el carácter de unión de los emojis compuestos
+    # (por ejemplo 👨‍👩‍👧); la spec solo pide emojis simples. Habría que permitir U+200D si hace falta.
+    if not descripcion.isprintable():
+        raise ErrorGastos(E13)
+    if len(descripcion) > DESCRIPCION_MAXIMO_CARACTERES:
+        raise ErrorGastos(E9)
+    return descripcion
 
 
 def formatear_monto(centavos: int) -> str:

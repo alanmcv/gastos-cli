@@ -28,7 +28,7 @@
   - Hecho cuando: los tests confirman que `"  Comida  Rápida "` → `"comida rápida"`, que `"COMIDA"`, `"Comida"` y `" comida "` dan el mismo resultado, y que `"Café"` es distinto de `"cafe"`.
 - [x] **T06 · `normalizar_categoria`, errores:** E-6, E-7 y E-8. · RF-4.3, RF-4.4, RF-4.5, RF-10.3 · Depende de T05
   - Hecho cuando: los tests confirman que `"   "` → E-6, que `"_ahorro"`, `"comida🍕"`, `"a/b"` y `"x²"` → E-7, y que una categoría de 30 caracteres se acepta y una de 31 → E-8.
-- [ ] **T07 · `normalizar_descripcion`.** · RF-5.1, RF-5.2, RF-5.3, RF-5.4, RF-5.5, RF-10.3 · Depende de T05
+- [x] **T07 · `normalizar_descripcion`.** · RF-5.1, RF-5.2, RF-5.3, RF-5.4, RF-5.5, RF-10.3 · Depende de T05
   - Hecho cuando: los tests confirman que `"   "` → `""`, que `"a\nb"` → `"a b"`, que se conservan las mayúsculas, que 100 caracteres con tildes o emojis se aceptan, que 101 → E-9, que `"a\x07b"` → E-13 y que 101 caracteres con `\x07` → E-13.
 - [ ] **T08 · `crear_gasto`.** · RF-2.1, RF-2.3, RF-2.4 · Depende de T04, T06 y T07
   - Hecho cuando:
