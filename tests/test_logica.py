@@ -11,6 +11,7 @@ from gastos.logica import (
     normalizar_categoria,
     normalizar_descripcion,
     parsear_monto,
+    resumir,
     validar_gasto_guardado,
 )
 
@@ -316,3 +317,43 @@ def test_gastos_del_mes_en_cambio_de_anio():
 def test_gastos_del_mes_sin_gastos():
     """RF-6.1: si no hay gastos ese mes, la lista queda vacía."""
     assert gastos_del_mes([gasto("2026-09-30")], 2026, 10) == []
+
+
+def gastos_por_categoria(*pares):
+    """Arma un gasto de octubre de 2026 por cada pareja (categoria, centavos)."""
+    return [gasto("2026-10-26", centavos, categoria) for categoria, centavos in pares]
+
+
+def test_resumir_suma_por_categoria_y_ordena_de_mayor_a_menor():
+    """RF-7.2: totales por categoría, de mayor a menor, y total general."""
+    gastos = gastos_por_categoria(
+        ("transporte", 1000), ("comida", 1500), ("ocio", 2000), ("comida", 1500)
+    )
+    assert resumir(gastos) == ([("comida", 3000), ("ocio", 2000), ("transporte", 1000)], 6000)
+
+
+@pytest.mark.parametrize(
+    "categorias, orden_esperado",
+    [
+        (["ñandú", "nube", "árbol"], ["árbol", "nube", "ñandú"]),
+        (["café", "cafe"], ["cafe", "café"]),
+        (["ña", "nz"], ["nz", "ña"]),
+        (["oso", "ñu"], ["ñu", "oso"]),
+        (["über", "uva"], ["über", "uva"]),
+    ],
+)
+def test_resumir_desempata_alfabeticamente(categorias, orden_esperado):
+    """RF-7.3: empate alfabético sin tildes, ñ después de la n; si solo difieren en tildes, va primero la que no lleva."""
+    filas, _ = resumir(gastos_por_categoria(*[(c, 500) for c in categorias]))
+    assert [categoria for categoria, _ in filas] == orden_esperado
+
+
+def test_resumir_es_exacto_al_centavo():
+    """RF-7.4, RNF-2: 0.10 + 0.20 da exactamente 0.30."""
+    assert resumir(gastos_por_categoria(("comida", 10), ("comida", 20))) == ([("comida", 30)], 30)
+
+
+def test_resumir_supera_el_monto_maximo_de_un_gasto():
+    """RF-7.4: 3 gastos de 1000000 dan un total de 3000000, sin límite superior."""
+    gastos = gastos_por_categoria(*[("matricula", 100000000)] * 3)
+    assert resumir(gastos) == ([("matricula", 300000000)], 300000000)

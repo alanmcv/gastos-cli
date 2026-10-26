@@ -166,6 +166,35 @@ def gastos_del_mes(gastos: list, anio: int, mes: int) -> list:
     return [g for g in gastos if g["fecha"].startswith(prefijo)]
 
 
+def _clave_alfabetica(texto: str) -> str:
+    """Clave para ordenar en español: ignora las tildes y deja la ñ después de toda la n (RF-7.3)."""
+    clave = ""
+    for caracter in texto:
+        if caracter == "ñ":
+            # "￿" es mayor que cualquier letra: "nz" < "ña" < "o".
+            clave += "n￿"
+        else:
+            separado = unicodedata.normalize("NFD", caracter)
+            clave += "".join(c for c in separado if not unicodedata.combining(c))
+    return clave
+
+
+def resumir(gastos: list) -> tuple[list, int]:
+    """Suma los gastos por categoría y devuelve ([(categoria, centavos), ...], total) (RF-7.2 a RF-7.4).
+
+    Orden: de mayor a menor total; si empatan, alfabético sin tildes; si siguen
+    empatadas (cafe/café), va primero la que no lleva tilde.
+    """
+    totales = {}
+    for g in gastos:
+        totales[g["categoria"]] = totales.get(g["categoria"], 0) + g["monto_centavos"]
+    filas = sorted(
+        totales.items(),
+        key=lambda fila: (-fila[1], _clave_alfabetica(fila[0]), fila[0]),
+    )
+    return filas, sum(totales.values())
+
+
 def formatear_monto(centavos: int) -> str:
     """Convierte centavos en texto para el usuario: 2550 -> "Bs 25.50" (RF-10.1)."""
     return f"Bs {centavos // 100}.{centavos % 100:02d}"

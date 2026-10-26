@@ -44,7 +44,7 @@
     - falta una clave obligatoria.
 - [x] **T10 · `gastos_del_mes`.** · RF-6.1, RF-6.4, RF-7.1 · Depende de T01
   - Hecho cuando: los tests de cambio de mes, de año y de un mismo mes en años distintos dan lo que dice la spec, y un gasto con fecha futura dentro del mes aparece en su orden de registro.
-- [ ] **T11 · `resumir` y el orden alfabético.** · RF-7.2, RF-7.3, RF-7.4, RNF-2 · Depende de T10
+- [x] **T11 · `resumir` y el orden alfabético.** · RF-7.2, RF-7.3, RF-7.4, RNF-2 · Depende de T10
   - Hecho cuando: los tests confirman que:
     - las categorías se ordenan de mayor a menor total;
     - el empate se ordena `árbol`, `nube`, `ñandú`;
