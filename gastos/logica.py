@@ -1,6 +1,7 @@
 """Lógica de gastos-cli: funciones puras, sin print, input ni archivos."""
 
 import re
+import unicodedata
 
 # Textos del catálogo de la spec (RF-10.3).
 E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
@@ -45,6 +46,14 @@ def parsear_monto(texto: str) -> int:
     if centavos > MONTO_MAXIMO_CENTAVOS:
         raise ErrorGastos(E5)
     return centavos
+
+
+def normalizar_categoria(texto: str) -> str:
+    """Normaliza una categoría: "  Comida  Rápida " -> "comida rápida" (RF-4.1).
+
+    NFC hace que una "é" escrita como "e" + tilde combinante cuente como 1 carácter.
+    """
+    return " ".join(unicodedata.normalize("NFC", texto).split()).lower()
 
 
 def formatear_monto(centavos: int) -> str:

@@ -24,7 +24,7 @@
   - Hecho cuando: un test parametrizado confirma que `25` → 2500, `025` → 2500, `25.5` → 2550, `25,50` → 2550, ` 25 ` → 2500, `0.01` → 1 y `1000000.00` → 100000000.
 - [x] **T04 · `parsear_monto`, errores en orden:** se crean las constantes E-1 a E-5 con el texto exacto del catálogo. · RF-3.5, RF-10.3 · Depende de T03
   - Hecho cuando: un test parametrizado confirma que cada monto inválido de la sección 6 de la spec lanza `ErrorGastos` con el texto exacto esperado. Incluye `""`, `-0.001`, `1.000`, `1.000,50`, `1e3`, `00` y `1000000.01`.
-- [ ] **T05 · `normalizar_categoria`, normalización:** quitar espacios de los extremos, colapsar los internos, pasar a NFC y a minúsculas. · RF-4.1, RF-4.2 · Depende de T01
+- [x] **T05 · `normalizar_categoria`, normalización:** quitar espacios de los extremos, colapsar los internos, pasar a NFC y a minúsculas. · RF-4.1, RF-4.2 · Depende de T01
   - Hecho cuando: los tests confirman que `"  Comida  Rápida "` → `"comida rápida"`, que `"COMIDA"`, `"Comida"` y `" comida "` dan el mismo resultado, y que `"Café"` es distinto de `"cafe"`.
 - [ ] **T06 · `normalizar_categoria`, errores:** E-6, E-7 y E-8. · RF-4.3, RF-4.4, RF-4.5, RF-10.3 · Depende de T05
   - Hecho cuando: los tests confirman que `"   "` → E-6, que `"_ahorro"`, `"comida🍕"`, `"a/b"` y `"x²"` → E-7, y que una categoría de 30 caracteres se acepta y una de 31 → E-8.

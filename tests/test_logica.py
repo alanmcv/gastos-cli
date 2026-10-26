@@ -1,6 +1,12 @@
 import pytest
 
-from gastos.logica import ErrorGastos, formatear_fecha, formatear_monto, parsear_monto
+from gastos.logica import (
+    ErrorGastos,
+    formatear_fecha,
+    formatear_monto,
+    normalizar_categoria,
+    parsear_monto,
+)
 
 # Textos exactos del catálogo de la spec (RF-10.3).
 E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
@@ -88,3 +94,28 @@ def test_parsear_monto_invalido_da_el_primer_error(texto, mensaje):
     with pytest.raises(ErrorGastos) as error:
         parsear_monto(texto)
     assert str(error.value) == mensaje
+
+
+@pytest.mark.parametrize(
+    "texto, esperado",
+    [
+        ("  Comida  Rápida ", "comida rápida"),
+        ("comida\t\nrapida", "comida rapida"),
+        ("CAFÉ", "café"),
+        ("ÑANDÚ", "ñandú"),
+        ("Café", "café"),  # "e" + tilde combinante queda como "é" (NFC)
+    ],
+)
+def test_normalizar_categoria(texto, esperado):
+    """RF-4.1: quita y colapsa espacios en blanco, aplica NFC y pasa a minúsculas."""
+    assert normalizar_categoria(texto) == esperado
+
+
+def test_normalizar_categoria_iguala_mayusculas_y_espacios():
+    """RF-4.2: "COMIDA", "Comida" y " comida " son la misma categoría."""
+    assert {normalizar_categoria(c) for c in ["COMIDA", "Comida", " comida "]} == {"comida"}
+
+
+def test_normalizar_categoria_distingue_tildes():
+    """RF-4.2: "Café" y "cafe" son categorías distintas."""
+    assert normalizar_categoria("Café") != normalizar_categoria("cafe")
