@@ -214,6 +214,18 @@ def lineas_listado(gastos: list, anio: int, mes: int) -> list[str]:
     return lineas
 
 
+def lineas_resumen(gastos: list, anio: int, mes: int) -> list[str]:
+    """Devuelve las líneas del resumen por categoría del mes, o M-2 si no hay gastos (RF-7)."""
+    del_mes = gastos_del_mes(gastos, anio, mes)
+    if not del_mes:
+        return [M2.format(mes=MESES[mes - 1], anio=anio)]
+    filas, total = resumir(del_mes)
+    lineas = [f"Resumen de {MESES[mes - 1]} de {anio}:"]
+    lineas += [f"{categoria}: {formatear_monto(centavos)}" for categoria, centavos in filas]
+    lineas.append(f"Total: {formatear_monto(total)}")
+    return lineas
+
+
 def formatear_monto(centavos: int) -> str:
     """Convierte centavos en texto para el usuario: 2550 -> "Bs 25.50" (RF-10.1)."""
     return f"Bs {centavos // 100}.{centavos % 100:02d}"

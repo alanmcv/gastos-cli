@@ -9,6 +9,7 @@ from gastos.logica import (
     formatear_monto,
     gastos_del_mes,
     lineas_listado,
+    lineas_resumen,
     normalizar_categoria,
     normalizar_descripcion,
     parsear_monto,
@@ -392,4 +393,36 @@ def test_lineas_listado_sin_gastos_del_mes_da_m2(mes, nombre):
     """RF-6.2, RF-6.6, RF-10.3: sin gastos del mes se muestra M-2, con el mes en español y minúsculas."""
     assert lineas_listado([gasto("2025-10-15")], 2026, mes) == [
         f"No hay gastos registrados en {nombre} de 2026."
+    ]
+
+
+def test_lineas_resumen():
+    """RF-7.1, RF-10.3: título, una línea por categoría del mes (ya ordenadas) y el total."""
+    gastos = [
+        gasto("2026-10-03", 2550, "comida"),
+        gasto("2026-10-04", 300, "transporte"),
+        gasto("2026-10-05", 1000, "comida"),
+        gasto("2026-09-30", 99999, "ocio"),  # otro mes: no cuenta
+    ]
+    assert lineas_resumen(gastos, 2026, 10) == [
+        "Resumen de octubre de 2026:",
+        "comida: Bs 35.50",
+        "transporte: Bs 3.00",
+        "Total: Bs 38.50",
+    ]
+
+
+def test_lineas_resumen_con_una_sola_categoria():
+    """RF-7.1: con una sola categoría salen 3 líneas."""
+    assert lineas_resumen([gasto("2026-10-03", 2550, "comida")], 2026, 10) == [
+        "Resumen de octubre de 2026:",
+        "comida: Bs 25.50",
+        "Total: Bs 25.50",
+    ]
+
+
+def test_lineas_resumen_sin_gastos_del_mes_da_m2():
+    """RF-7.5, RF-10.3: sin gastos del mes se muestra M-2."""
+    assert lineas_resumen([gasto("2026-09-30")], 2026, 10) == [
+        "No hay gastos registrados en octubre de 2026."
     ]
