@@ -20,7 +20,7 @@
 
 - [x] **T02 · Formatos de salida:** `formatear_monto` y `formatear_fecha`. · RF-10.1, RF-10.2 · Depende de T01
   - Hecho cuando: los tests confirman que `1` → `Bs 0.01`, `2550` → `Bs 25.50`, `100000000` → `Bs 1000000.00` y `"2026-10-05"` → `05/10/2026`.
-- [ ] **T03 · `parsear_monto`, montos válidos.** · RF-3.1, RF-3.2, RF-3.3, RF-3.4 · Depende de T01
+- [x] **T03 · `parsear_monto`, montos válidos.** · RF-3.1, RF-3.2, RF-3.3, RF-3.4 · Depende de T01
   - Hecho cuando: un test parametrizado confirma que `25` → 2500, `025` → 2500, `25.5` → 2550, `25,50` → 2550, ` 25 ` → 2500, `0.01` → 1 y `1000000.00` → 100000000.
 - [ ] **T04 · `parsear_monto`, errores en orden:** se crean las constantes E-1 a E-5 con el texto exacto del catálogo. · RF-3.5, RF-10.3 · Depende de T03
   - Hecho cuando: un test parametrizado confirma que cada monto inválido de la sección 6 de la spec lanza `ErrorGastos` con el texto exacto esperado. Incluye `""`, `-0.001`, `1.000`, `1.000,50`, `1e3`, `00` y `1000000.01`.
