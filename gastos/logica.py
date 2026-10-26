@@ -5,6 +5,7 @@ import unicodedata
 from datetime import date
 
 # Textos del catálogo de la spec (RF-10.3).
+M2 = "No hay gastos registrados en {mes} de {anio}."
 E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
 E2 = "Error: el monto debe ser mayor que cero."
 E3 = "Error: el monto puede tener como máximo 2 decimales."
@@ -25,6 +26,10 @@ E13 = "Error: la descripción tiene caracteres no permitidos."
 MONTO_MAXIMO_CENTAVOS = 100_000_000
 CATEGORIA_MAXIMO_CARACTERES = 30
 DESCRIPCION_MAXIMO_CARACTERES = 100
+MESES = (
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+)
 
 # Cifras ASCII y, opcionalmente, un separador (punto o coma) con 1 o 2 decimales (RF-3.2).
 _MONTO_VALIDO = re.compile(r"([0-9]+)(?:[.,]([0-9]{1,2}))?")
@@ -193,6 +198,20 @@ def resumir(gastos: list) -> tuple[list, int]:
         key=lambda fila: (-fila[1], _clave_alfabetica(fila[0]), fila[0]),
     )
     return filas, sum(totales.values())
+
+
+def lineas_listado(gastos: list, anio: int, mes: int) -> list[str]:
+    """Devuelve las líneas del listado del mes, o M-2 si no hay gastos (RF-6)."""
+    del_mes = gastos_del_mes(gastos, anio, mes)
+    if not del_mes:
+        return [M2.format(mes=MESES[mes - 1], anio=anio)]
+    lineas = [f"Gastos de {MESES[mes - 1]} de {anio}:"]
+    for g in del_mes:
+        fecha = formatear_fecha(g["fecha"])
+        monto = formatear_monto(g["monto_centavos"])
+        descripcion = g["descripcion"] or "-"
+        lineas.append(f"{fecha} | {g['categoria']} | {monto} | {descripcion}")
+    return lineas
 
 
 def formatear_monto(centavos: int) -> str:

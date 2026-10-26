@@ -51,7 +51,7 @@
     - en el empate `café`/`cafe`, `cafe` va primero;
     - `0.10 + 0.20` da 30 centavos;
     - 3 gastos de 1000000 dan 300000000 centavos.
-- [ ] **T12 · `lineas_listado` y M-2.** · RF-6.1, RF-6.2, RF-6.3, RF-6.5, RF-6.6, RF-10.3 · Depende de T02 y T10
+- [x] **T12 · `lineas_listado` y M-2.** · RF-6.1, RF-6.2, RF-6.3, RF-6.5, RF-6.6, RF-10.3 · Depende de T02 y T10
   - Hecho cuando: los tests confirman las líneas exactas `Gastos de octubre de 2026:` y `03/10/2026 | comida | Bs 25.50 | almuerzo`, una descripción vacía mostrada como `-`, y M-2 cuando no hay gastos del mes.
 - [ ] **T13 · `lineas_resumen`.** · RF-7.1, RF-7.5, RF-10.3 · Depende de T11 y T12
   - Hecho cuando: los tests confirman las líneas exactas `Resumen de octubre de 2026:`, `comida: Bs 25.50` y `Total: Bs …`, que una sola categoría da 3 líneas y que sin gastos se obtiene M-2.

@@ -8,6 +8,7 @@ from gastos.logica import (
     formatear_fecha,
     formatear_monto,
     gastos_del_mes,
+    lineas_listado,
     normalizar_categoria,
     normalizar_descripcion,
     parsear_monto,
@@ -357,3 +358,38 @@ def test_resumir_supera_el_monto_maximo_de_un_gasto():
     """RF-7.4: 3 gastos de 1000000 dan un total de 3000000, sin límite superior."""
     gastos = gastos_por_categoria(*[("matricula", 100000000)] * 3)
     assert resumir(gastos) == ([("matricula", 300000000)], 300000000)
+
+
+def test_lineas_listado():
+    """RF-6.1, RF-6.3, RF-10.3: título y una línea por gasto del mes; la descripción vacía se muestra como "-"."""
+    gastos = [
+        gasto("2026-10-03", 2550, "comida", "almuerzo"),
+        gasto("2026-09-30", 999, "ocio", "no aparece"),
+        gasto("2026-10-05", 300, "transporte", ""),
+    ]
+    assert lineas_listado(gastos, 2026, 10) == [
+        "Gastos de octubre de 2026:",
+        "03/10/2026 | comida | Bs 25.50 | almuerzo",
+        "05/10/2026 | transporte | Bs 3.00 | -",
+    ]
+
+
+def test_lineas_listado_muestra_todos_los_gastos_sin_recortar():
+    """RF-6.5: el listado no se pagina ni se recorta."""
+    gastos = [gasto("2026-10-26") for _ in range(500)]
+    assert len(lineas_listado(gastos, 2026, 10)) == 501
+
+
+@pytest.mark.parametrize(
+    "mes, nombre",
+    [
+        (1, "enero"), (2, "febrero"), (3, "marzo"), (4, "abril"),
+        (5, "mayo"), (6, "junio"), (7, "julio"), (8, "agosto"),
+        (9, "septiembre"), (10, "octubre"), (11, "noviembre"), (12, "diciembre"),
+    ],
+)
+def test_lineas_listado_sin_gastos_del_mes_da_m2(mes, nombre):
+    """RF-6.2, RF-6.6, RF-10.3: sin gastos del mes se muestra M-2, con el mes en español y minúsculas."""
+    assert lineas_listado([gasto("2025-10-15")], 2026, mes) == [
+        f"No hay gastos registrados en {nombre} de 2026."
+    ]
