@@ -29,6 +29,8 @@ DESCRIPCION_MAXIMO_CARACTERES = 100
 # Cifras ASCII y, opcionalmente, un separador (punto o coma) con 1 o 2 decimales (RF-3.2).
 _MONTO_VALIDO = re.compile(r"([0-9]+)(?:[.,]([0-9]{1,2}))?")
 _DEMASIADOS_DECIMALES = re.compile(r"[0-9]+[.,][0-9]{3,}")
+_FECHA_ISO = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+_CLAVES_DE_GASTO = {"fecha", "monto_centavos", "categoria", "descripcion"}
 
 
 class ErrorGastos(Exception):
@@ -119,6 +121,43 @@ def crear_gasto(monto: str, categoria: str, descripcion: str, hoy: date) -> dict
         "categoria": categoria,
         "descripcion": descripcion,
     }
+
+
+def _es_fecha_iso(valor) -> bool:
+    """Exactamente "AAAA-MM-DD" y una fecha real; fromisoformat solo no basta porque acepta "20261026"."""
+    if not isinstance(valor, str) or not _FECHA_ISO.fullmatch(valor):
+        return False
+    try:
+        date.fromisoformat(valor)
+    except ValueError:
+        return False
+    return True
+
+
+def validar_gasto_guardado(gasto) -> bool:
+    """Indica si un gasto leído de los datos guardados cumple las reglas de la spec (RF-8.3).
+
+    Las claves de más se ignoran (RF-8.4).
+    """
+    if not isinstance(gasto, dict) or not _CLAVES_DE_GASTO <= gasto.keys():
+        return False
+    monto = gasto["monto_centavos"]
+    categoria = gasto["categoria"]
+    descripcion = gasto["descripcion"]
+    # type() y no isinstance(), porque True también es un int.
+    if type(monto) is not int or not 1 <= monto <= MONTO_MAXIMO_CENTAVOS:
+        return False
+    if not _es_fecha_iso(gasto["fecha"]):
+        return False
+    if not isinstance(categoria, str) or not isinstance(descripcion, str):
+        return False
+    try:
+        return (
+            normalizar_categoria(categoria) == categoria
+            and normalizar_descripcion(descripcion) == descripcion
+        )
+    except ErrorGastos:
+        return False
 
 
 def formatear_monto(centavos: int) -> str:

@@ -10,6 +10,7 @@ from gastos.logica import (
     normalizar_categoria,
     normalizar_descripcion,
     parsear_monto,
+    validar_gasto_guardado,
 )
 
 # Textos exactos del catálogo de la spec (RF-10.3).
@@ -222,3 +223,59 @@ def test_crear_gasto_muestra_solo_el_primer_error(monto, categoria, descripcion,
     with pytest.raises(ErrorGastos) as error:
         crear_gasto(monto, categoria, descripcion, HOY)
     assert str(error.value) == mensaje
+
+
+GASTO_VALIDO = {
+    "fecha": "2026-10-26",
+    "monto_centavos": 2550,
+    "categoria": "café",
+    "descripcion": "almuerzo ☕",
+}
+
+
+def test_validar_gasto_guardado_acepta_un_gasto_valido():
+    """RF-8.3: un gasto que cumple las reglas de la spec es válido."""
+    assert validar_gasto_guardado(GASTO_VALIDO) is True
+
+
+def test_validar_gasto_guardado_ignora_claves_de_mas():
+    """RF-8.4: la información adicional no invalida el gasto."""
+    assert validar_gasto_guardado({**GASTO_VALIDO, "nota": "extra"}) is True
+
+
+@pytest.mark.parametrize(
+    "cambios",
+    [
+        {"fecha": "2026-13-01"},
+        {"fecha": "20261026"},
+        {"fecha": 20261026},
+        {"monto_centavos": 0},
+        {"monto_centavos": True},
+        {"monto_centavos": 25.5},
+        {"monto_centavos": "2550"},
+        {"monto_centavos": 100000001},
+        {"categoria": "Comida"},
+        {"categoria": "_mal"},
+        {"categoria": 5},
+        {"descripcion": "  sin normalizar"},
+        {"descripcion": "a" * 101},
+        {"descripcion": None},
+    ],
+)
+def test_validar_gasto_guardado_rechaza_un_campo_invalido(cambios):
+    """RF-8.3: un campo que incumple las reglas de la spec invalida el gasto."""
+    assert validar_gasto_guardado({**GASTO_VALIDO, **cambios}) is False
+
+
+@pytest.mark.parametrize("clave", ["fecha", "monto_centavos", "categoria", "descripcion"])
+def test_validar_gasto_guardado_rechaza_si_falta_una_clave(clave):
+    """RF-8.3: si falta una clave obligatoria, el gasto no es válido."""
+    gasto = dict(GASTO_VALIDO)
+    del gasto[clave]
+    assert validar_gasto_guardado(gasto) is False
+
+
+@pytest.mark.parametrize("gasto", ["texto", 5, None, ["2026-10-26", 2550]])
+def test_validar_gasto_guardado_rechaza_lo_que_no_es_un_objeto(gasto):
+    """RF-8.3: un elemento que no es un objeto JSON no es un gasto."""
+    assert validar_gasto_guardado(gasto) is False

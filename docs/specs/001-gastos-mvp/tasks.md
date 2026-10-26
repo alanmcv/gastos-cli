@@ -35,7 +35,7 @@
     - con `hoy=date(2026,10,26)` se obtiene `{"fecha": "2026-10-26", "monto_centavos": …, "categoria": …, "descripcion": ""}`;
     - un monto inválido junto con una categoría inválida lanza solo el error del monto;
     - una categoría inválida junto con una descripción inválida lanza solo el error de la categoría.
-- [ ] **T09 · `validar_gasto_guardado`.** · RF-8.3, RF-8.4 · Depende de T08
+- [x] **T09 · `validar_gasto_guardado`.** · RF-8.3, RF-8.4 · Depende de T08
   - Hecho cuando: un gasto válido, incluso con claves de más, da `True`. Da `False` cada uno de estos casos:
     - fecha `2026-13-01` o `20261026`;
     - monto `0`, `True`, `25.5` o `100000001`;
