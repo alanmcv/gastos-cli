@@ -1,6 +1,21 @@
 import pytest
 
-from gastos.cli import ErrorUso, interpretar
+from gastos.cli import ErrorUso, interpretar, texto_ayuda
+
+AYUDA_GENERAL = "\n".join(
+    [
+        "Uso:",
+        "  gastos agregar <monto> <categoria> [descripcion]   Registra un gasto con la fecha de hoy",
+        "  gastos listar" + " " * 38 + "Muestra los gastos de este mes",
+        "  gastos resumen" + " " * 37 + "Muestra el total por categoría de este mes",
+        "  gastos --ayuda" + " " * 37 + "Muestra esta ayuda",
+        'Ejemplo: gastos agregar 25.50 comida "almuerzo en la U"',
+    ]
+)
+AYUDA_AGREGAR = (
+    "Uso: gastos agregar <monto> <categoria> [descripcion]\n"
+    'Ejemplo: gastos agregar 25.50 comida "almuerzo en la U"'
+)
 
 
 @pytest.mark.parametrize(
@@ -63,3 +78,68 @@ def test_interpretar_opcion_desconocida(argv, opcion):
     with pytest.raises(ErrorUso) as error:
         interpretar(argv)
     assert error.value.motivo == f'la opción "{opcion}" no existe'
+
+
+@pytest.mark.parametrize(
+    "argv, ayuda_de",
+    [
+        (["--ayuda"], []),
+        (["agregar", "--ayuda"], ["agregar"]),
+        (["agregar", "25", "--ayuda"], ["agregar"]),
+        (["listar", "--ayuda"], ["listar"]),
+        (["borrar", "--ayuda"], []),
+    ],
+)
+def test_interpretar_ayuda(argv, ayuda_de):
+    """RF-1.2: --ayuda, solo o después de un comando, pide la ayuda (la general si el comando no existe)."""
+    assert interpretar(argv) == ("ayuda", ayuda_de)
+
+
+def test_texto_ayuda_general():
+    """RF-1.2, RF-9.2: la ayuda general en español, como en el plan."""
+    assert texto_ayuda() == AYUDA_GENERAL
+
+
+@pytest.mark.parametrize(
+    "comando, esperado",
+    [
+        ("agregar", AYUDA_AGREGAR),
+        ("listar", "Uso: gastos listar\nEjemplo: gastos listar"),
+        ("resumen", "Uso: gastos resumen\nEjemplo: gastos resumen"),
+    ],
+)
+def test_texto_ayuda_de_un_comando(comando, esperado):
+    """RF-1.2: la ayuda de un comando muestra su línea Uso: y su ejemplo."""
+    assert texto_ayuda(comando) == esperado
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [],
+        ["borrar"],
+        ["agregar"],
+        ["agregar", "25"],
+        ["agregar", "25", "comida", "a", "b"],
+        ["listar", "x"],
+        ["agregar", "5", "-ahorro"],
+        ["resumen", "--todo"],
+    ],
+)
+def test_todo_error_de_uso_tiene_formato_e12(argv):
+    """RF-10.3 (E-12), RF-9.2: "Error: <motivo>." seguido del texto de uso, que empieza con "Uso:"."""
+    with pytest.raises(ErrorUso) as error:
+        interpretar(argv)
+    primera, *resto = str(error.value).split("\n")
+    assert primera == f"Error: {error.value.motivo}."
+    assert resto[0].startswith("Uso:")
+
+
+def test_error_de_uso_muestra_la_ayuda_del_comando():
+    """RF-10.3 (E-12): si el comando existe, se muestra su uso; si no, el uso general."""
+    with pytest.raises(ErrorUso) as de_agregar:
+        interpretar(["agregar", "25"])
+    assert str(de_agregar.value) == "Error: falta la categoría.\n" + AYUDA_AGREGAR
+    with pytest.raises(ErrorUso) as sin_comando:
+        interpretar(["borrar"])
+    assert str(sin_comando.value) == 'Error: el comando "borrar" no existe.\n' + AYUDA_GENERAL

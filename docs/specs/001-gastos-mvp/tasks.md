@@ -77,7 +77,7 @@
   - Hecho cuando: los tests confirman que `[]`, `["borrar"]`, `["agregar", "25"]`, `["agregar", "25", "comida", "a", "b"]` y `["listar", "x"]` dan un error de uso con su motivo en español, y que los 3 comandos válidos devuelven `(comando, args)`.
 - [x] **T18 · `interpretar`, opciones y valores negativos.** · RF-1.3, RF-9.1 · Depende de T17
   - Hecho cuando: los tests confirman que `["agregar", "-5", "comida"]` se acepta como valor, y que `["agregar", "5", "-ahorro"]` y `["listar", "-x"]` dan el error de uso `la opción "…" no existe`.
-- [ ] **T19 · Ayuda y E-12.** · RF-1.2, RF-9.2, RF-10.3 · Depende de T18
+- [x] **T19 · Ayuda y E-12.** · RF-1.2, RF-9.2, RF-10.3 · Depende de T18
   - Hecho cuando: los tests confirman que `--ayuda` muestra el texto general del plan, que `agregar --ayuda` muestra la ayuda de `agregar` y que todo error de uso empieza con `Error: ` y contiene una línea `Uso:`.
 - [ ] **T20 · `main` con `agregar`.** · RF-2.1, RF-2.2, RF-2.4, RF-8.2 · Depende de T08, T16 y T19
   - Hecho cuando: con `main(["agregar", "25,5", "Comida"], ruta=tmp, hoy=date(2026,10,26))` se obtienen el código 0, `Gasto registrado: Bs 25.50 en comida el 26/10/2026.` en stdout y el gasto guardado. Un monto inválido da el código 1, el error en stderr y ningún archivo creado.
