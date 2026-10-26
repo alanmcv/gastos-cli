@@ -73,7 +73,7 @@
 
 ## Fase 3 — CLI (`cli.py`)
 
-- [ ] **T17 · `interpretar`, comandos y cantidad de argumentos.** · RF-1.1, RF-9.1 · Depende de T01
+- [x] **T17 · `interpretar`, comandos y cantidad de argumentos.** · RF-1.1, RF-9.1 · Depende de T01
   - Hecho cuando: los tests confirman que `[]`, `["borrar"]`, `["agregar", "25"]`, `["agregar", "25", "comida", "a", "b"]` y `["listar", "x"]` dan un error de uso con su motivo en español, y que los 3 comandos válidos devuelven `(comando, args)`.
 - [ ] **T18 · `interpretar`, opciones y valores negativos.** · RF-1.3, RF-9.1 · Depende de T17
   - Hecho cuando: los tests confirman que `["agregar", "-5", "comida"]` se acepta como valor, y que `["agregar", "5", "-ahorro"]` y `["listar", "-x"]` dan el error de uso `la opción "…" no existe`.
