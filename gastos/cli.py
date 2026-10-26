@@ -17,13 +17,21 @@ class ErrorUso(Exception):
         self.motivo = motivo
 
 
+def _es_opcion(argumento: str) -> bool:
+    """Empieza con "-" y no sigue con una cifra: "-ahorro" es una opción, "-5" es un valor (RF-1.3)."""
+    return argumento.startswith("-") and not (len(argumento) > 1 and argumento[1] in "0123456789")
+
+
 def interpretar(argv: list[str]) -> tuple[str, list[str]]:
-    """Devuelve (comando, args) o lanza ErrorUso con el motivo en español (RF-1.1, RF-9.1)."""
+    """Devuelve (comando, args) o lanza ErrorUso con el motivo en español (RF-1.1, RF-1.3, RF-9.1)."""
     if not argv:
         raise ErrorUso("falta el comando")
     comando, args = argv[0], argv[1:]
     if comando not in _ARGUMENTOS:
         raise ErrorUso(f'el comando "{comando}" no existe')
+    for argumento in args:
+        if _es_opcion(argumento):
+            raise ErrorUso(f'la opción "{argumento}" no existe')
     minimo, maximo = _ARGUMENTOS[comando]
     if len(args) < minimo:
         # Solo agregar tiene argumentos obligatorios.

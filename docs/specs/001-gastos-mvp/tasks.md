@@ -75,7 +75,7 @@
 
 - [x] **T17 · `interpretar`, comandos y cantidad de argumentos.** · RF-1.1, RF-9.1 · Depende de T01
   - Hecho cuando: los tests confirman que `[]`, `["borrar"]`, `["agregar", "25"]`, `["agregar", "25", "comida", "a", "b"]` y `["listar", "x"]` dan un error de uso con su motivo en español, y que los 3 comandos válidos devuelven `(comando, args)`.
-- [ ] **T18 · `interpretar`, opciones y valores negativos.** · RF-1.3, RF-9.1 · Depende de T17
+- [x] **T18 · `interpretar`, opciones y valores negativos.** · RF-1.3, RF-9.1 · Depende de T17
   - Hecho cuando: los tests confirman que `["agregar", "-5", "comida"]` se acepta como valor, y que `["agregar", "5", "-ahorro"]` y `["listar", "-x"]` dan el error de uso `la opción "…" no existe`.
 - [ ] **T19 · Ayuda y E-12.** · RF-1.2, RF-9.2, RF-10.3 · Depende de T18
   - Hecho cuando: los tests confirman que `--ayuda` muestra el texto general del plan, que `agregar --ayuda` muestra la ayuda de `agregar` y que todo error de uso empieza con `Error: ` y contiene una línea `Uso:`.

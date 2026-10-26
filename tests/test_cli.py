@@ -34,3 +34,32 @@ def test_interpretar_uso_incorrecto(argv, motivo):
     with pytest.raises(ErrorUso) as error:
         interpretar(argv)
     assert error.value.motivo == motivo
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["agregar", "-5", "comida"],
+        ["agregar", "-0.001", "comida"],
+        ["agregar", "25", "comida", "-5 de descuento"],
+    ],
+)
+def test_interpretar_guion_seguido_de_cifra_es_un_valor(argv):
+    """RF-1.3: "-5" es un valor (lo rechazará la validación del monto con E-2), no una opción."""
+    assert interpretar(argv) == ("agregar", argv[1:])
+
+
+@pytest.mark.parametrize(
+    "argv, opcion",
+    [
+        (["agregar", "5", "-ahorro"], "-ahorro"),
+        (["listar", "-x"], "-x"),
+        (["resumen", "--todo"], "--todo"),
+        (["agregar", "5", "comida", "-"], "-"),
+    ],
+)
+def test_interpretar_opcion_desconocida(argv, opcion):
+    """RF-9.1: un argumento que empieza con "-" y no sigue con una cifra es una opción desconocida."""
+    with pytest.raises(ErrorUso) as error:
+        interpretar(argv)
+    assert error.value.motivo == f'la opción "{opcion}" no existe'
