@@ -1,6 +1,8 @@
 """Lectura y guardado de los gastos en un archivo JSON (RF-8)."""
 
+import errno
 import json
+import os
 from pathlib import Path
 
 from gastos.logica import ErrorGastos, validar_gasto_guardado
@@ -10,6 +12,7 @@ E10 = (
     "Error: no se pudieron leer los datos guardados en {ruta} ({motivo}). "
     "No se modificaron. Revísalos o muévelos a otra carpeta para empezar de cero."
 )
+E11 = "Error: no se pudo guardar el gasto ({motivo}). Los datos anteriores no se modificaron."
 
 
 def _no_se_pudo_leer(ruta: Path, motivo: str) -> ErrorGastos:
@@ -47,6 +50,30 @@ def cargar(ruta: Path) -> list:
     return gastos
 
 
+def _motivo_de_escritura(error: OSError) -> str:
+    if isinstance(error, PermissionError):
+        return "sin permiso de escritura"
+    if error.errno == errno.ENOSPC:
+        return "disco lleno"
+    return "error del sistema al escribir"
+
+
 def guardar(ruta: Path, gastos: list) -> None:
-    """Guarda la lista de gastos en UTF-8 legible, con las tildes tal cual (RF-8.1)."""
-    ruta.write_text(json.dumps(gastos, ensure_ascii=False, indent=2), encoding="utf-8")
+    """Guarda la lista de gastos en UTF-8 legible, con las tildes tal cual (RF-8.1).
+
+    Escribe primero un temporal y luego lo pone en lugar del original con
+    os.replace, que es atómico: si algo falla, los datos quedan como estaban (RNF-3).
+    Ante un OSError lanza ErrorGastos con E-11 (RF-8.5).
+    """
+    temporal = ruta.with_name(ruta.name + ".tmp")
+    try:
+        with open(temporal, "w", encoding="utf-8") as archivo:
+            json.dump(gastos, archivo, ensure_ascii=False, indent=2)
+            archivo.flush()
+            os.fsync(archivo.fileno())
+        os.replace(temporal, ruta)
+    except BaseException as error:  # también Ctrl+C: no debe quedar el temporal
+        temporal.unlink(missing_ok=True)
+        if isinstance(error, OSError):
+            raise ErrorGastos(E11.format(motivo=_motivo_de_escritura(error)))
+        raise

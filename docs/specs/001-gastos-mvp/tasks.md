@@ -68,7 +68,7 @@
     - un objeto en lugar de una lista;
     - un gasto inválido;
     - `PermissionError`, simulado con `monkeypatch`.
-- [ ] **T16 · `guardar` atómico y E-11.** · RF-8.5, RNF-3, RF-10.3 · Depende de T14
+- [x] **T16 · `guardar` atómico y E-11.** · RF-8.5, RNF-3, RF-10.3 · Depende de T14
   - Hecho cuando: con `os.replace` parcheado para lanzar `OSError` o `KeyboardInterrupt`, el archivo original queda intacto y el `.tmp` no queda en la carpeta. Además, `PermissionError` da el motivo "sin permiso de escritura" y `errno.ENOSPC` da "disco lleno".
 
 ## Fase 3 — CLI (`cli.py`)

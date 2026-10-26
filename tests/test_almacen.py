@@ -1,4 +1,6 @@
+import errno
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -90,3 +92,56 @@ def test_cargar_sin_poder_leer_da_e10(tmp_path, monkeypatch, excepcion, motivo):
     monkeypatch.undo()
     assert str(error.value) == e10(ruta, motivo)
     assert ruta.read_bytes() == antes
+
+
+def e11(motivo):
+    return f"Error: no se pudo guardar el gasto ({motivo}). Los datos anteriores no se modificaron."
+
+
+def reemplazo_que_falla(excepcion):
+    def reemplazar(origen, destino):
+        raise excepcion
+
+    return reemplazar
+
+
+@pytest.mark.parametrize(
+    "excepcion, motivo",
+    [
+        (PermissionError(errno.EACCES, "acceso denegado"), "sin permiso de escritura"),
+        (OSError(errno.ENOSPC, "no queda espacio"), "disco lleno"),
+        (OSError(errno.EIO, "fallo de E/S"), "error del sistema al escribir"),
+    ],
+)
+def test_guardar_con_error_da_e11_y_deja_los_datos_intactos(tmp_path, monkeypatch, excepcion, motivo):
+    """RF-8.5, RNF-3, RF-10.3: si falla el guardado, E-11, el original intacto y sin temporal."""
+    ruta = tmp_path / "gastos.json"
+    guardar(ruta, GASTOS[:1])
+    antes = ruta.read_bytes()
+    monkeypatch.setattr(os, "replace", reemplazo_que_falla(excepcion))
+    with pytest.raises(ErrorGastos) as error:
+        guardar(ruta, GASTOS)
+    assert str(error.value) == e11(motivo)
+    assert ruta.read_bytes() == antes
+    assert list(tmp_path.iterdir()) == [ruta]
+
+
+def test_guardar_interrumpido_con_ctrl_c_deja_los_datos_intactos(tmp_path, monkeypatch):
+    """RNF-3: un Ctrl+C mientras se guarda no deja datos a medio escribir ni el temporal."""
+    ruta = tmp_path / "gastos.json"
+    guardar(ruta, GASTOS[:1])
+    antes = ruta.read_bytes()
+    monkeypatch.setattr(os, "replace", reemplazo_que_falla(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):
+        guardar(ruta, GASTOS)
+    assert ruta.read_bytes() == antes
+    assert list(tmp_path.iterdir()) == [ruta]
+
+
+def test_guardar_reemplaza_un_archivo_existente(tmp_path):
+    """RF-8.1: guardar de nuevo reemplaza el contenido anterior."""
+    ruta = tmp_path / "gastos.json"
+    guardar(ruta, GASTOS[:1])
+    guardar(ruta, GASTOS)
+    assert cargar(ruta) == GASTOS
+    assert list(tmp_path.iterdir()) == [ruta]
