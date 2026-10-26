@@ -2,6 +2,7 @@
 
 import re
 import unicodedata
+from datetime import date
 
 # Textos del catálogo de la spec (RF-10.3).
 E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
@@ -101,6 +102,23 @@ def normalizar_descripcion(texto: str) -> str:
     if len(descripcion) > DESCRIPCION_MAXIMO_CARACTERES:
         raise ErrorGastos(E9)
     return descripcion
+
+
+def crear_gasto(monto: str, categoria: str, descripcion: str, hoy: date) -> dict:
+    """Valida los datos y arma un gasto con la fecha de hoy (RF-2.1, RF-2.3).
+
+    Valida el monto, luego la categoría y luego la descripción; el primer error
+    detiene todo (RF-2.4).
+    """
+    monto_centavos = parsear_monto(monto)
+    categoria = normalizar_categoria(categoria)
+    descripcion = normalizar_descripcion(descripcion)
+    return {
+        "fecha": hoy.isoformat(),
+        "monto_centavos": monto_centavos,
+        "categoria": categoria,
+        "descripcion": descripcion,
+    }
 
 
 def formatear_monto(centavos: int) -> str:

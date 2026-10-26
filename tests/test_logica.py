@@ -1,7 +1,10 @@
+from datetime import date
+
 import pytest
 
 from gastos.logica import (
     ErrorGastos,
+    crear_gasto,
     formatear_fecha,
     formatear_monto,
     normalizar_categoria,
@@ -184,4 +187,38 @@ def test_normalizar_descripcion_invalida(texto, mensaje):
     """RF-5.4, RF-5.5, RF-10.3: no imprimibles dan E-13 (antes que el largo) y más de 100 caracteres dan E-9."""
     with pytest.raises(ErrorGastos) as error:
         normalizar_descripcion(texto)
+    assert str(error.value) == mensaje
+
+
+HOY = date(2026, 10, 26)
+
+
+def test_crear_gasto_con_la_fecha_de_hoy_y_datos_normalizados():
+    """RF-2.1, RF-2.3: el gasto lleva la fecha actual y, sin descripción, queda vacía."""
+    assert crear_gasto(" 25,5 ", "  Comida ", "", HOY) == {
+        "fecha": "2026-10-26",
+        "monto_centavos": 2550,
+        "categoria": "comida",
+        "descripcion": "",
+    }
+
+
+def test_crear_gasto_normaliza_la_descripcion():
+    """RF-2.1: la descripción se guarda normalizada."""
+    assert crear_gasto("3", "transporte", "  micro  a la U ", HOY)["descripcion"] == "micro a la U"
+
+
+@pytest.mark.parametrize(
+    "monto, categoria, descripcion, mensaje",
+    [
+        ("-5", "_mal", "a" * 101, E2),  # monto, categoría y descripción inválidos: solo el del monto
+        ("abc", "", "", e4("abc")),
+        ("25", "_mal", "a" * 101, E7),  # categoría y descripción inválidas: solo el de la categoría
+        ("25", "comida", "a\x07", E13),
+    ],
+)
+def test_crear_gasto_muestra_solo_el_primer_error(monto, categoria, descripcion, mensaje):
+    """RF-2.4: se valida el monto, luego la categoría y luego la descripción; solo sale el primer error."""
+    with pytest.raises(ErrorGastos) as error:
+        crear_gasto(monto, categoria, descripcion, HOY)
     assert str(error.value) == mensaje
