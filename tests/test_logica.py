@@ -13,6 +13,12 @@ E1 = "Error: falta el monto. Ejemplo: gastos agregar 25.50 comida"
 E2 = "Error: el monto debe ser mayor que cero."
 E3 = "Error: el monto puede tener como máximo 2 decimales."
 E5 = "Error: el monto máximo por gasto es Bs 1000000.00."
+E6 = "Error: falta la categoría."
+E7 = (
+    'Error: la categoría solo puede tener letras, cifras, espacios, "-" y "_", '
+    "y debe empezar con una letra o una cifra."
+)
+E8 = "Error: la categoría puede tener como máximo 30 caracteres."
 
 
 def e4(valor):
@@ -119,3 +125,29 @@ def test_normalizar_categoria_iguala_mayusculas_y_espacios():
 def test_normalizar_categoria_distingue_tildes():
     """RF-4.2: "Café" y "cafe" son categorías distintas."""
     assert normalizar_categoria("Café") != normalizar_categoria("cafe")
+
+
+@pytest.mark.parametrize(
+    "texto, mensaje",
+    [
+        ("   ", E6),
+        ("", E6),
+        ("_ahorro", E7),
+        ("-ahorro", E7),
+        ("comida🍕", E7),
+        ("a/b", E7),
+        ("x²", E7),
+        ("a" * 31, E8),
+    ],
+)
+def test_normalizar_categoria_invalida(texto, mensaje):
+    """RF-4.3, RF-4.4, RF-4.5, RF-10.3: categoría vacía (E-6), con caracteres no permitidos (E-7) o larga (E-8)."""
+    with pytest.raises(ErrorGastos) as error:
+        normalizar_categoria(texto)
+    assert str(error.value) == mensaje
+
+
+@pytest.mark.parametrize("texto", ["a" * 30, "á" * 30, "comida-rapida_2", "9 ñandú über"])
+def test_normalizar_categoria_valida_hasta_30_caracteres(texto):
+    """RF-4.4, RF-4.5: letras con tilde, ñ, ü, cifras, espacios, "-" y "_"; 30 caracteres se aceptan."""
+    assert normalizar_categoria(texto) == texto

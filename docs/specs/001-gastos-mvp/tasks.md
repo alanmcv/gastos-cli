@@ -26,7 +26,7 @@
   - Hecho cuando: un test parametrizado confirma que cada monto inválido de la sección 6 de la spec lanza `ErrorGastos` con el texto exacto esperado. Incluye `""`, `-0.001`, `1.000`, `1.000,50`, `1e3`, `00` y `1000000.01`.
 - [x] **T05 · `normalizar_categoria`, normalización:** quitar espacios de los extremos, colapsar los internos, pasar a NFC y a minúsculas. · RF-4.1, RF-4.2 · Depende de T01
   - Hecho cuando: los tests confirman que `"  Comida  Rápida "` → `"comida rápida"`, que `"COMIDA"`, `"Comida"` y `" comida "` dan el mismo resultado, y que `"Café"` es distinto de `"cafe"`.
-- [ ] **T06 · `normalizar_categoria`, errores:** E-6, E-7 y E-8. · RF-4.3, RF-4.4, RF-4.5, RF-10.3 · Depende de T05
+- [x] **T06 · `normalizar_categoria`, errores:** E-6, E-7 y E-8. · RF-4.3, RF-4.4, RF-4.5, RF-10.3 · Depende de T05
   - Hecho cuando: los tests confirman que `"   "` → E-6, que `"_ahorro"`, `"comida🍕"`, `"a/b"` y `"x²"` → E-7, y que una categoría de 30 caracteres se acepta y una de 31 → E-8.
 - [ ] **T07 · `normalizar_descripcion`.** · RF-5.1, RF-5.2, RF-5.3, RF-5.4, RF-5.5, RF-10.3 · Depende de T05
   - Hecho cuando: los tests confirman que `"   "` → `""`, que `"a\nb"` → `"a b"`, que se conservan las mayúsculas, que 100 caracteres con tildes o emojis se aceptan, que 101 → E-9, que `"a\x07b"` → E-13 y que 101 caracteres con `\x07` → E-13.

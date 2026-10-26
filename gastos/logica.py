@@ -12,8 +12,15 @@ E4 = (
     "un punto o una coma con hasta 2 decimales (ej.: 25.50)."
 )
 E5 = "Error: el monto máximo por gasto es Bs 1000000.00."
+E6 = "Error: falta la categoría."
+E7 = (
+    'Error: la categoría solo puede tener letras, cifras, espacios, "-" y "_", '
+    "y debe empezar con una letra o una cifra."
+)
+E8 = "Error: la categoría puede tener como máximo 30 caracteres."
 
 MONTO_MAXIMO_CENTAVOS = 100_000_000
+CATEGORIA_MAXIMO_CARACTERES = 30
 
 # Cifras ASCII y, opcionalmente, un separador (punto o coma) con 1 o 2 decimales (RF-3.2).
 _MONTO_VALIDO = re.compile(r"([0-9]+)(?:[.,]([0-9]{1,2}))?")
@@ -48,12 +55,27 @@ def parsear_monto(texto: str) -> int:
     return centavos
 
 
+def _es_letra_o_cifra(caracter: str) -> bool:
+    """Letras de cualquier alfabeto (con tilde, ñ, ü) o cifras 0-9; "²" no cuenta como cifra."""
+    return caracter.isalpha() or caracter in "0123456789"
+
+
 def normalizar_categoria(texto: str) -> str:
     """Normaliza una categoría: "  Comida  Rápida " -> "comida rápida" (RF-4.1).
 
     NFC hace que una "é" escrita como "e" + tilde combinante cuente como 1 carácter.
+    Si la categoría no es válida, lanza ErrorGastos con E-6, E-7 o E-8 (RF-4.3 a RF-4.5).
     """
-    return " ".join(unicodedata.normalize("NFC", texto).split()).lower()
+    categoria = " ".join(unicodedata.normalize("NFC", texto).split()).lower()
+    if categoria == "":
+        raise ErrorGastos(E6)
+    if not _es_letra_o_cifra(categoria[0]) or not all(
+        _es_letra_o_cifra(c) or c in " -_" for c in categoria
+    ):
+        raise ErrorGastos(E7)
+    if len(categoria) > CATEGORIA_MAXIMO_CARACTERES:
+        raise ErrorGastos(E8)
+    return categoria
 
 
 def formatear_monto(centavos: int) -> str:
